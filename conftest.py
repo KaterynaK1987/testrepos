@@ -1,4 +1,5 @@
 from time import sleep
+from dataclasses import dataclass
 import pytest
 from enum import Enum
 import requests
@@ -8,6 +9,53 @@ import logging
 
 log = logging.getLogger(__name__)
 
+
+@dataclass
+class SensorInfo:
+    name: str
+    hid: str
+    model: str
+    firmware_version: int
+    reading_interval: float
+
+    def __post_init__(self):
+        if not isinstance(self.name, str):
+            log.error(f"Invalid type for name: {type(self.name).name}")
+            raise TypeError("'name' should be a string")
+
+        if self.name == "":
+            log.error("name is empty")
+            raise ValueError("'name' should not be empty")
+
+        if not isinstance(self.hid, str):
+            log.error(f"Invalid type for hid: {type(self.hid).name}")
+            raise TypeError("'hid' should be a string")
+        if not self.hid:
+            log.error("hid is empty")
+            raise ValueError("'hid' should not be empty")
+
+        if not isinstance(self.model, str):
+            log.error(f"Invalid type for model: {type(self.model).name}")
+            raise TypeError("'model' should be a string")
+        if not self.model:
+            log.error("model is empty")
+            raise ValueError("'model' should not be empty")
+
+        if not isinstance(self.firmware_version, int):
+            log.error(f"Invalid type for firmware_version: {type(self.firmware_version).name}")
+            raise TypeError("'firmware_version' should be an integer")
+        if self.firmware_version < 0:
+            log.error("firmware_version is negative")
+            raise ValueError("'firmware_version' should not be negative")
+
+        if not isinstance(self.reading_interval, (int, float)):
+            log.error(f"Invalid type for reading_interval: {type(self.reading_interval).name}")
+            raise TypeError("'reading_interval' should be a number")
+        if self.reading_interval <= 0:
+            log.error("reading_interval is non-positive")
+            raise ValueError("'reading_interval' should be positive")
+
+        log.debug(f"Initialized SensorInfo: {self}")
 
 class SensorMethod(Enum):
     GET_INFO = "get_info"
@@ -44,7 +92,7 @@ def wait(func: Callable, condition: Callable, tries: int, timeout: int, **kwargs
         sleep(timeout)
 
     log.debug("Exhausted all tries, condition evaluates to False, returning None")
-    return
+    return None
 
 def pytest_addoption(parser):
     parser.addoption(
@@ -113,7 +161,8 @@ def make_valid_request(send_post):
 def get_sensor_info(make_valid_request):
     def _get_sensor_info():
         log.info("Get sensor info")
-        return make_valid_request(SensorMethod.GET_INFO)
+        sensor_response = make_valid_request(SensorMethod.GET_INFO)
+        return SensorInfo(**sensor_response)
 
     return _get_sensor_info
 
@@ -156,13 +205,14 @@ def reset_sensor_to_factory(make_valid_request, get_sensor_info):
     def _reset_sensor_to_factory():
         log.info("Send reset firmware request to sensor")
         sensor_response = make_valid_request(SensorMethod.RESET_TO_FACTORY)
+        log.debug(f"Sensor response to RESET_TO_FACTORY: {sensor_response}")
         if sensor_response != "resetting":
             raise RuntimeError(
                 "Sensor didn't respond to factory reset properly"
             )
 
         sensor_info = wait(
-            get_sensor_info, lambda x: isinstance(x, dict), tries=15, timeout=1
+            get_sensor_info, lambda x: isinstance(x, SensorInfo), tries=30, timeout=2
         )
         if not sensor_info:
             raise RuntimeError("Sensor didn't reset to factory property")
