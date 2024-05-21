@@ -1,19 +1,10 @@
 from time import sleep
-<<<<<<< HEAD
-=======
 from dataclasses import dataclass
->>>>>>> lecture19
 import pytest
 from enum import Enum
 import requests
 from typing import Callable
 import logging
-<<<<<<< HEAD
-
-
-log = logging.getLogger(__name__)
-=======
->>>>>>> lecture19
 
 
 log = logging.getLogger(__name__)
@@ -101,11 +92,8 @@ def wait(func: Callable, condition: Callable, tries: int, timeout: int, **kwargs
         sleep(timeout)
 
     log.debug("Exhausted all tries, condition evaluates to False, returning None")
-<<<<<<< HEAD
-    return
-=======
     return None
->>>>>>> lecture19
+
 
 def pytest_addoption(parser):
     parser.addoption(
@@ -174,12 +162,8 @@ def make_valid_request(send_post):
 def get_sensor_info(make_valid_request):
     def _get_sensor_info():
         log.info("Get sensor info")
-<<<<<<< HEAD
-        return make_valid_request(SensorMethod.GET_INFO)
-=======
         sensor_response = make_valid_request(SensorMethod.GET_INFO)
         return SensorInfo(**sensor_response)
->>>>>>> lecture19
 
     return _get_sensor_info
 
@@ -222,21 +206,14 @@ def reset_sensor_to_factory(make_valid_request, get_sensor_info):
     def _reset_sensor_to_factory():
         log.info("Send reset firmware request to sensor")
         sensor_response = make_valid_request(SensorMethod.RESET_TO_FACTORY)
-<<<<<<< HEAD
-=======
         log.debug(f"Sensor response to RESET_TO_FACTORY: {sensor_response}")
->>>>>>> lecture19
         if sensor_response != "resetting":
             raise RuntimeError(
                 "Sensor didn't respond to factory reset properly"
             )
 
         sensor_info = wait(
-<<<<<<< HEAD
-            get_sensor_info, lambda x: isinstance(x, dict), tries=15, timeout=1
-=======
             get_sensor_info, lambda x: isinstance(x, SensorInfo), tries=30, timeout=2
->>>>>>> lecture19
         )
         if not sensor_info:
             raise RuntimeError("Sensor didn't reset to factory property")
