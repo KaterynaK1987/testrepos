@@ -43,8 +43,7 @@ def test_reboot(get_sensor_info, sensor_reboot):
         3. Wait for sensor to come back online.
         4. Get current sensor info.
         5. Validate that info from Step 1 is equal to info from Step 4.
-    """
-    
+    """    
     log.info("Get original sensor info")
     sensor_info_before_reboot = get_sensor_info()
 
@@ -71,8 +70,6 @@ def test_reboot(get_sensor_info, sensor_reboot):
     assert (
             sensor_info_before_reboot == sensor_info_after_reboot
     ), "Sensor information after reboot is the same as pre-reboot information"
-
-
 
 def test_set_sensor_name(get_sensor_info, set_sensor_name):
     """

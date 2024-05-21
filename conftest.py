@@ -9,7 +9,6 @@ import logging
 
 log = logging.getLogger(__name__)
 
-
 @dataclass
 class SensorInfo:
     name: str
@@ -93,6 +92,7 @@ def wait(func: Callable, condition: Callable, tries: int, timeout: int, **kwargs
 
     log.debug("Exhausted all tries, condition evaluates to False, returning None")
     return None
+
 
 def pytest_addoption(parser):
     parser.addoption(
