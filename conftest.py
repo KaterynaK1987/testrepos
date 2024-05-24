@@ -180,13 +180,20 @@ def get_sensor_reading(make_valid_request):
 def set_sensor_name(make_valid_request):
     def _get_sensor_name(name:str):
         log.info("Set sensor name to %s", name)
+        if not name:
+            log.error("name is empty")
+            raise ValueError("'name' should not be empty")
         return make_valid_request(SensorMethod.SET_NAME, {"name": name})
 
     return _get_sensor_name
+    
 
 @pytest.fixture(scope="session")
 def set_sensor_reading_interval(make_valid_request):
-    def _set_sensor_reading_interval(interval:int):
+    def _set_sensor_reading_interval(interval: int):
+        if interval < 1:
+            log.error("Invalid interval")
+            raise ValueError("'interval' should be positive")
         log.info("Set sensor reading interval to %d seconds", interval)
         return make_valid_request(SensorMethod.SET_READING_INTERVAL, {"interval": interval})
 
